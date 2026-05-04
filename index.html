@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tahkim Takip - Ilyas Yilanli</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f4f0;--sur:#fff;--sur2:#f0efe9;--bor:#e2e0d8;--bor2:#cccab8;
+  --tx:#1a1917;--tx2:#6b6860;--tx3:#a09e97;
+  --bl:#1a56a0;--bll:#e8f0fb;--blm:#b8d0f2;
+  --pu:#5b52c4;--pul:#eeedfb;
+  --gr:#2a6b1a;--grl:#e6f3e2;
+  --am:#8a5200;--aml:#fef3dc;
+  --re:#b03030;--rel:#fdeaea;
+  --te:#0a6b56;--tel:#e0f4ef;
+  --pi:#8a2f5a;--pil:#fce8f2;
+  --r:10px;--rs:6px;
+  --sh:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+  --shm:0 4px 16px rgba(0,0,0,.10);
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --mono:"SF Mono","Cascadia Code","Consolas",monospace;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--tx);font-size:14px;line-height:1.5}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:var(--bor2);border-radius:99px}
+.shell{display:flex;min-height:100vh}
+.sidebar{width:210px;flex-shrink:0;background:var(--sur);border-right:1px solid var(--bor);padding:20px 0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.main{flex:1;min-width:0}
+.sb-logo{padding:0 18px 20px;border-bottom:1px solid var(--bor);margin-bottom:14px}
+.sb-logo h2{font-size:12px;font-weight:700;letter-spacing:.04em}
+.sb-logo p{font-size:11px;color:var(--tx3);margin-top:2px}
+.sb-sec{font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;padding:0 18px 6px}
+.sb-item{display:flex;align-items:center;gap:8px;padding:7px 10px;margin:0 8px 1px;border-radius:var(--rs);cursor:pointer;font-size:12px;color:var(--tx2);transition:all .15s}
+.sb-item:hover{background:var(--sur2);color:var(--tx)}
+.sb-item.active{background:var(--bll);color:var(--bl);font-weight:600}
+.sb-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.sb-div{height:1px;background:var(--bor);margin:10px 10px}
+.sb-stats{padding:0 18px;margin-top:auto;padding-top:16px;border-top:1px solid var(--bor)}
+.sb-stat{display:flex;justify-content:space-between;padding:4px 0;font-size:11px;color:var(--tx2)}
+.sb-stat b{font-weight:600;color:var(--tx);font-family:var(--mono)}
+.topbar{background:var(--sur);border-bottom:1px solid var(--bor);padding:14px 24px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10}
+.topbar-t{font-size:15px;font-weight:600}
+.topbar-s{font-size:11px;color:var(--tx3);margin-top:2px}
+.topbar-r{display:flex;gap:8px}
+.btn-p{background:var(--tx);color:#fff;border:none;padding:8px 16px;border-radius:var(--rs);font-size:12px;cursor:pointer;font-weight:600;font-family:var(--font)}
+.btn-p:hover{opacity:.85}
+.btn-g{background:var(--sur);color:var(--tx);border:1px solid var(--bor2);padding:7px 13px;border-radius:var(--rs);font-size:12px;cursor:pointer;font-family:var(--font)}
+.btn-g:hover{background:var(--sur2)}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-del{color:var(--re);border-color:rgba(176,48,48,.3)}
+.content{padding:22px 24px}
+.metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:22px}
+.mc{background:var(--sur);border:1px solid var(--bor);border-radius:var(--r);padding:14px;box-shadow:var(--sh);position:relative;overflow:hidden}
+.mc-bar{position:absolute;top:0;left:0;right:0;height:3px}
+.mc-l{font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px;font-weight:500}
+.mc-v{font-size:21px;font-weight:700;font-family:var(--mono)}
+.mc-s{font-size:10px;color:var(--tx2);margin-top:5px}
+.sec-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.sec-t{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--tx2)}
+.leg{display:flex;gap:12px;font-size:11px;color:var(--tx3)}
+.leg-d{display:inline-block;width:10px;height:3px;border-radius:2px;margin-right:4px;vertical-align:middle}
+.pipeline{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px}
+.pcol{background:var(--sur2);border:1px solid var(--bor);border-radius:var(--r);padding:11px;min-height:180px}
+.phead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--bor)}
+.ptit{font-size:12px;font-weight:600}
+.badge{font-size:10px;padding:2px 8px;border-radius:99px;font-weight:700;font-family:var(--mono)}
+.b-gray{background:#ebebeb;color:#666}
+.b-blue{background:var(--bll);color:var(--bl)}
+.b-amber{background:var(--aml);color:var(--am)}
+.b-green{background:var(--grl);color:var(--gr)}
+.mg{background:var(--sur);border:1px solid var(--bor);border-radius:var(--rs);margin-bottom:7px;overflow:hidden;box-shadow:var(--sh)}
+.mg-hdr{padding:8px 10px;border-bottom:1px solid var(--bor)}
+.mg-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px}
+.mg-meta{font-size:10px;color:var(--tx3);margin-top:1px}
+.mg-body{padding:5px 7px;display:flex;flex-direction:column;gap:4px}
+.dc{display:flex;align-items:center;gap:6px;padding:6px 7px;border-radius:5px;cursor:pointer;border:1px solid transparent;border-left:3px solid var(--bor2);transition:all .15s}
+.dc:hover{background:var(--sur2);border-color:var(--bor)}
+.dc.hasar{border-left-color:var(--bl)}
+.dc.deger{border-left-color:var(--pi)}
+.dc.hd{border-left-color:var(--te)}
+.dt-b{font-size:9px;padding:2px 6px;border-radius:99px;font-weight:600;flex-shrink:0;white-space:nowrap}
+.dt-h{background:var(--bll);color:var(--bl)}
+.dt-d{background:var(--pil);color:var(--pi)}
+.dt-hd{background:var(--tel);color:var(--te)}
+.dc-sig{font-size:10px;color:var(--tx3);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tg{font-size:9px;padding:2px 6px;border-radius:99px;font-weight:600}
+.tg-il{background:var(--bll);color:var(--bl)}
+.tg-ya{background:var(--pul);color:var(--pu)}
+.alrt{background:var(--rel);color:var(--re);border-radius:99px;font-size:9px;font-weight:700;padding:1px 5px;margin-left:3px}
+.twrap{background:var(--sur);border:1px solid var(--bor);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)}
+.tbar{padding:10px 14px;background:var(--sur2);border-bottom:1px solid var(--bor);display:flex;gap:8px}
+.si{flex:1;font-size:12px;padding:6px 10px;border-radius:var(--rs);border:1px solid var(--bor2);background:var(--sur);color:var(--tx);font-family:var(--font)}
+.sel{font-size:12px;padding:6px 10px;border-radius:var(--rs);border:1px solid var(--bor2);background:var(--sur);color:var(--tx);font-family:var(--font)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:9px 13px;font-size:10px;font-weight:600;color:var(--tx3);background:var(--sur2);border-bottom:1px solid var(--bor);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+td{padding:9px 13px;border-bottom:1px solid var(--bor);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafaf7}
+.t-name{font-weight:600;font-size:12px}
+.t-sub{font-size:10px;color:var(--tx3);margin-top:1px}
+.sp{font-size:10px;padding:2px 8px;border-radius:99px;font-weight:600}
+.overlay{display:none;position:fixed;inset:0;background:rgba(20,18,14,.45);z-index:100;justify-content:center;align-items:flex-start;padding:18px;overflow-y:auto}
+.overlay.open{display:flex}
+.modal{background:var(--sur);border-radius:14px;border:1px solid var(--bor);width:680px;max-width:100%;box-shadow:var(--shm);margin:auto;flex-shrink:0}
+.mhdr{padding:16px 20px 12px;border-bottom:1px solid var(--bor);background:var(--sur2);border-radius:14px 14px 0 0}
+.mhdr-r{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:11px}
+.mhdr h3{font-size:15px;font-weight:700}
+.mhdr-s{font-size:11px;color:var(--tx3);margin-top:2px}
+.xbtn{background:none;border:1px solid var(--bor2);border-radius:var(--rs);padding:3px 9px;cursor:pointer;font-size:16px;color:var(--tx2);line-height:1}
+.dtype-sel{display:flex;border:1px solid var(--bor2);border-radius:var(--rs);overflow:hidden}
+.dtype-opt{flex:1;text-align:center}
+.dtype-opt input{display:none}
+.dtype-opt label{display:block;padding:8px 4px;font-size:11px;cursor:pointer;color:var(--tx2);border-right:1px solid var(--bor);transition:all .15s;font-family:var(--font)}
+.dtype-opt:last-child label{border-right:none}
+.dtype-opt.oh input:checked+label{background:var(--bll);color:var(--bl);font-weight:600}
+.dtype-opt.od input:checked+label{background:var(--pil);color:var(--pi);font-weight:600}
+.dtype-opt.ohd input:checked+label{background:var(--tel);color:var(--te);font-weight:600}
+.mtabs{display:flex;border-bottom:1px solid var(--bor);background:var(--sur2)}
+.mt{padding:9px 13px;font-size:11px;cursor:pointer;border:none;background:none;color:var(--tx2);border-bottom:2px solid transparent;margin-bottom:-1px;font-family:var(--font)}
+.mt:hover{color:var(--tx)}
+.mt.active{color:var(--tx);border-bottom-color:var(--tx);font-weight:600}
+.mbody{padding:18px 20px;max-height:520px;overflow-y:auto}
+.mp{display:none}
+.mp.active{display:block}
+.fsec{margin-bottom:16px}
+.fsec-t{font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--bor)}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.fr{display:flex;flex-direction:column;gap:4px}
+.fl{font-size:11px;color:var(--tx2);font-weight:500}
+.fi{font-size:12px;padding:7px 10px;border-radius:var(--rs);border:1px solid var(--bor2);background:var(--sur2);color:var(--tx);width:100%;font-family:var(--font)}
+.fi:focus{outline:none;border-color:var(--bl)}
+textarea.fi{resize:vertical}
+.drow{display:flex;border:1px solid var(--bor2);border-radius:var(--rs);overflow:hidden}
+.di{flex:1}
+.di label{display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 4px;cursor:pointer;font-size:11px;color:var(--tx2);border-right:1px solid var(--bor);transition:all .15s}
+.di:last-child label{border-right:none}
+.di input{display:none}
+.di input:checked+label{background:var(--grl);color:var(--gr);font-weight:600}
+.ddot{width:7px;height:7px;border-radius:50%;background:var(--bor2)}
+.di input:checked+label .ddot{background:var(--gr)}
+.mh-grid{display:grid;gap:8px;padding:0 0 5px;border-bottom:1px solid var(--bor);margin-bottom:8px}
+.mh-m{grid-template-columns:2fr 1fr 1.2fr auto}
+.mh-v{grid-template-columns:2.5fr 1.2fr auto}
+.mh-grid span{font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+.mr-m{display:grid;grid-template-columns:2fr 1fr 1.2fr auto;gap:8px;margin-bottom:6px;align-items:center}
+.mr-v{display:grid;grid-template-columns:2.5fr 1.2fr auto;gap:8px;margin-bottom:6px;align-items:center}
+.del-btn{background:none;border:none;color:var(--tx3);cursor:pointer;font-size:18px;padding:0 2px;line-height:1}
+.del-btn:hover{color:var(--re)}
+.addbtn{font-size:11px;background:none;border:1px dashed var(--bor2);border-radius:var(--rs);padding:7px 14px;cursor:pointer;width:100%;text-align:left;color:var(--tx3);margin-top:6px;font-family:var(--font)}
+.addbtn:hover{border-color:var(--bl);color:var(--bl)}
+.msum{background:var(--sur2);border-radius:var(--rs);border:1px solid var(--bor);padding:11px 13px;margin-top:10px}
+.msrow{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:12px}
+.msrow+.msrow{border-top:1px solid var(--bor)}
+.vsum{background:var(--tel);border-radius:var(--rs);border:1px solid rgba(10,107,86,.15);padding:11px 13px;margin-top:10px}
+.vsrow{display:flex;justify-content:space-between;padding:4px 0;font-size:12px;color:var(--te)}
+.vsrow+.vsrow{border-top:1px solid rgba(10,107,86,.12)}
+.orow{background:var(--sur2);border:1px solid var(--bor);border-radius:var(--rs);padding:11px 13px;margin-bottom:6px}
+.or-g{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:center}
+.o-amt{font-size:14px;font-weight:700;font-family:var(--mono)}
+.o-type{font-size:11px;color:var(--tx3);margin-top:2px}
+.o-date{font-size:12px;font-weight:600}
+.o-dir{font-size:11px;color:var(--tx3);margin-top:2px}
+.o-note{font-size:11px;color:var(--tx2);margin-top:7px;padding-top:6px;border-top:1px solid var(--bor)}
+.addbox{background:var(--sur2);border:1px solid var(--bor);border-radius:var(--rs);padding:13px;margin-top:10px}
+.addbox-t{font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.dagcard{background:var(--sur2);border:1px solid var(--bor);border-radius:var(--r);padding:16px;margin-bottom:12px}
+.dagcard-t{font-size:12px;font-weight:600;margin-bottom:12px}
+.dr{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:12px}
+.dr+.dr{border-top:1px solid var(--bor)}
+.dr-tot{border-top:2px solid var(--bor2) !important;padding-top:10px;margin-top:4px}
+.dl{color:var(--tx2)}
+.dv{font-weight:700;font-family:var(--mono)}
+.dv.neg{color:var(--re)}
+.dv.pos{color:var(--gr)}
+.split2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.sbox{border-radius:var(--r);padding:14px;text-align:center}
+.sbox.il{background:var(--bll);border:1px solid var(--blm)}
+.sbox.ya{background:var(--pul);border:1px solid #c4bff5}
+.sname{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px}
+.sname.il{color:var(--bl)}
+.sname.ya{color:var(--pu)}
+.samt{font-size:21px;font-weight:700;font-family:var(--mono)}
+.sdet{font-size:10px;color:var(--tx2);margin-top:5px;line-height:1.6}
+.pbar{height:5px;background:var(--bor);border-radius:99px;overflow:hidden;margin-top:10px}
+.pfill{height:100%;background:linear-gradient(90deg,var(--bl),var(--pu));transition:width .3s}
+.fbox{background:var(--bll);border:1px solid var(--blm);border-radius:var(--rs);padding:12px 14px;font-size:11px;color:var(--bl);line-height:1.8;margin-bottom:10px;word-break:break-word}
+.infobox{background:var(--aml);border-radius:var(--rs);padding:9px 12px;font-size:11px;color:var(--am);border:1px solid rgba(138,82,0,.15)}
+.mfoot{display:flex;gap:8px;justify-content:flex-end;padding:12px 20px;border-top:1px solid var(--bor);background:var(--sur2);border-radius:0 0 14px 14px}
+.empty{text-align:center;padding:18px 8px;color:var(--tx3);font-size:11px}
+</style>
+</head>
+<body>
+<div class="shell">
+<aside class="sidebar">
+  <div class="sb-logo"><h2>TAHKİM TAKİP</h2><p>İlyas Yılanlı Hukuk Bürosu</p></div>
+  <div class="sb-sec">Görünüm</div>
+  <div class="sb-item active" id="nav-dash" onclick="showView('dash')"><span class="sb-dot" style="background:var(--bl)"></span>Genel Bakış</div>
+  <div class="sb-item" id="nav-table" onclick="showView('table')"><span class="sb-dot" style="background:var(--tx3)"></span>Tüm Dosyalar</div>
+  <div class="sb-div"></div>
+  <div class="sb-sec">Filtre</div>
+  <div class="sb-item" onclick="setFilter('')">Tümü</div>
+  <div class="sb-item" onclick="setFilter('Basvuru')"><span class="sb-dot" style="background:#999"></span>Başvuru</div>
+  <div class="sb-item" onclick="setFilter('Hakem')"><span class="sb-dot" style="background:var(--bl)"></span>Hakem Atandı</div>
+  <div class="sb-item" onclick="setFilter('Bilirkisi')"><span class="sb-dot" style="background:var(--am)"></span>Bilirkişi</div>
+  <div class="sb-item" onclick="setFilter('Karar')"><span class="sb-dot" style="background:var(--gr)"></span>Karar</div>
+  <div class="sb-div"></div>
+  <div class="sb-stats" id="sb-stats"></div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <div><div class="topbar-t" id="pg-title">Genel Bakış</div><div class="topbar-s">2025 · Aktif dosyalar</div></div>
+    <div class="topbar-r">
+      <button class="btn-g" onclick="exportCSV()">CSV İndir</button>
+      <button class="btn-p" onclick="openNew()">+ Yeni Dosya</button>
+    </div>
+  </div>
+  <div class="content">
+    <div id="view-dash" style="display:none">
+      <div class="metrics" id="metrics"></div>
+      <div class="sec-hdr">
+        <span class="sec-t">Dosya Pipeline</span>
+        <div class="leg">
+          <span><span class="leg-d" style="background:var(--bl)"></span>Hasar</span>
+          <span><span class="leg-d" style="background:var(--pi)"></span>Değer Kaybı</span>
+          <span><span class="leg-d" style="background:var(--te)"></span>H+D</span>
+        </div>
+      </div>
+      <div class="pipeline" id="pipeline"></div>
+    </div>
+    <div id="view-table" style="display:none">
+      <div class="twrap">
+        <div class="tbar">
+          <input class="si" id="srch" placeholder="Müvekkil, sigorta, tahkim no..." oninput="renderTable()">
+          <select class="sel" id="flt-dtype" onchange="renderTable()"><option value="">Tüm türler</option><option>Hasar</option><option>Değer Kaybı</option><option>Hasar + Değer</option></select>
+          <select class="sel" id="flt-stage" onchange="renderTable()"><option value="">Tüm durumlar</option><option value="Basvuru">Başvuru</option><option value="Hakem">Hakem</option><option value="Bilirkisi">Bilirkişi</option><option value="Karar">Karar</option></select>
+        </div>
+        <table><thead><tr><th>Müvekkil</th><th>Tür</th><th>Sigorta</th><th>Tahkim No</th><th>Durum</th><th>İhtar Bitiş</th><th>Masraf Notu</th><th></th></tr></thead><tbody id="tbody"></tbody></table>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
+<div class="modal">
+  <div class="mhdr">
+    <div class="mhdr-r"><div><h3 id="m-title">Dosya</h3><div class="mhdr-s" id="m-sub"></div></div><button class="xbtn" onclick="closeModal()">X</button></div>
+    <div style="font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px">Dosya Türü</div>
+    <div class="dtype-sel">
+      <div class="dtype-opt oh"><input type="radio" name="dt" id="dt-h" value="Hasar" checked><label for="dt-h">Hasar Dosyası</label></div>
+      <div class="dtype-opt od"><input type="radio" name="dt" id="dt-d" value="Değer Kaybı"><label for="dt-d">Değer Kaybı</label></div>
+      <div class="dtype-opt ohd"><input type="radio" name="dt" id="dt-hd" value="Hasar + Değer"><label for="dt-hd">Hasar + Değer</label></div>
+    </div>
+  </div>
+  <div class="mtabs">
+    <button class="mt active" onclick="smtab('bilgi',this)">Bilgiler</button>
+    <button class="mt" onclick="smtab('masraf',this)">Masraflar</button>
+    <button class="mt" onclick="smtab('odeme',this)">Ödemeler</button>
+    <button class="mt" onclick="smtab('vekalet',this)">Vekalet Ücreti</button>
+    <button class="mt" onclick="smtab('dagilim',this)">Net Dağılım</button>
+  </div>
+  <div class="mbody">
+    <div class="mp active" id="mp-bilgi">
+      <div class="fsec"><div class="fsec-t">Süreç Durumu</div>
+        <div class="drow">
+          <div class="di"><input type="checkbox" id="d1"><label for="d1"><span class="ddot"></span>Başvuru</label></div>
+          <div class="di"><input type="checkbox" id="d2"><label for="d2"><span class="ddot"></span>Hakem Atandı</label></div>
+          <div class="di"><input type="checkbox" id="d3"><label for="d3"><span class="ddot"></span>Bilirkişi</label></div>
+          <div class="di"><input type="checkbox" id="d4"><label for="d4"><span class="ddot"></span>Karar</label></div>
+        </div>
+      </div>
+      <div class="fsec"><div class="fsec-t">Taraf Bilgileri</div>
+        <div class="fg">
+          <div class="fr"><label class="fl">Müvekkil adı</label><input class="fi" id="f-muv"></div>
+          <div class="fr"><label class="fl">TCKN</label><input class="fi" id="f-tckn"></div>
+          <div class="fr"><label class="fl">Sigorta şirketi</label><input class="fi" id="f-sig"></div>
+          <div class="fr"><label class="fl">Tahkim dosya no</label><input class="fi" id="f-tah"></div>
+          <div class="fr"><label class="fl">Dosya no</label><input class="fi" id="f-dos"></div>
+          <div class="fr"><label class="fl">Poliçe no</label><input class="fi" id="f-pol"></div>
+          <div class="fr"><label class="fl">Müv. araç plakası</label><input class="fi" id="f-mp"></div>
+          <div class="fr"><label class="fl">Karşı araç plakası</label><input class="fi" id="f-kp"></div>
+        </div>
+      </div>
+      <div class="fsec"><div class="fsec-t">Tarihler</div>
+        <div class="fg">
+          <div class="fr"><label class="fl">Kaza tarihi</label><input class="fi" type="date" id="f-kz"></div>
+          <div class="fr"><label class="fl">İhtar tarihi</label><input class="fi" type="date" id="f-ih"></div>
+          <div class="fr"><label class="fl">İhtar bitiş tarihi</label><input class="fi" type="date" id="f-ib"></div>
+          <div class="fr"><label class="fl">Bakiye hasar (TL)</label><input class="fi" id="f-bk"></div>
+        </div>
+      </div>
+      <div class="fsec"><div class="fsec-t">Notlar</div><textarea class="fi" id="f-not" rows="3"></textarea></div>
+    </div>
+    <div class="mp" id="mp-masraf">
+      <div class="fsec"><div class="fsec-t">Avukat Masraf Kalemleri</div>
+        <div class="mh-grid mh-m"><span>Masraf türü</span><span>Avukat</span><span>Tutar (TL)</span><span></span></div>
+        <div id="mlist"></div>
+        <button class="addbtn" onclick="addMasraf()">+ Masraf kalemi ekle</button>
+        <div class="msum">
+          <div class="msrow"><span style="color:var(--tx2)">İlyas masrafı</span><span style="font-weight:700;font-family:var(--mono)" id="ms-il">0 TL</span></div>
+          <div class="msrow"><span style="color:var(--tx2)">Yakup masrafı</span><span style="font-weight:700;font-family:var(--mono)" id="ms-ya">0 TL</span></div>
+          <div class="msrow"><span style="font-weight:600">Toplam masraf</span><span style="font-weight:700;font-family:var(--mono)" id="ms-tot">0 TL</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="mp" id="mp-odeme">
+      <div class="fsec"><div class="fsec-t">Ödeme Geçmişi</div>
+        <div id="olist"></div>
+        <div class="addbox"><div class="addbox-t">Yeni ödeme ekle</div>
+          <div class="fg3" style="margin-bottom:9px">
+            <div class="fr"><label class="fl">Tutar (TL)</label><input class="fi" type="number" id="nt"></div>
+            <div class="fr"><label class="fl">Tarih</label><input class="fi" type="date" id="nd"></div>
+            <div class="fr"><label class="fl">Yön</label><select class="fi" id="ny"><option>Sigorta - Büro</option><option>Büro - Müvekkil</option><option>Büro - İlyas</option><option>Büro - Yakup</option><option>Diğer</option></select></div>
+          </div>
+          <div class="fg" style="margin-bottom:9px">
+            <div class="fr"><label class="fl">Tür</label><select class="fi" id="ntur"><option>Kısmi ödeme</option><option>Asıl ödeme</option><option>Müvekkile ödeme</option><option>Avukat payı</option><option>Diğer</option></select></div>
+            <div class="fr"><label class="fl">Açıklama</label><input class="fi" id="nn"></div>
+          </div>
+          <button class="btn-g btn-sm" onclick="addOdeme()">+ Ekle</button>
+        </div>
+      </div>
+    </div>
+    <div class="mp" id="mp-vekalet">
+      <div class="fsec"><div class="fsec-t">Mahkeme Kararıyla Hükmedilen Ücretler</div>
+        <div style="background:var(--bll);border:1px solid var(--blm);border-radius:var(--rs);padding:10px 12px;font-size:12px;color:var(--bl);margin-bottom:13px;line-height:1.6">Mahkeme kararında büroya hükmedilen ücretleri kalem kalem girin.</div>
+        <div class="mh-grid mh-v"><span>Ücret kalemi</span><span>Tutar (TL)</span><span></span></div>
+        <div id="vlist"></div>
+        <button class="addbtn" onclick="addVekalet()">+ Ücret kalemi ekle</button>
+        <div class="vsum">
+          <div class="vsrow"><span style="font-weight:500">Vekalet ücreti</span><span style="font-weight:700;font-family:var(--mono)" id="v-vek">0 TL</span></div>
+          <div class="vsrow"><span style="font-weight:500">Diğer harclar</span><span style="font-weight:700;font-family:var(--mono)" id="v-harc">0 TL</span></div>
+          <div class="vsrow" style="border-top:1.5px solid rgba(10,107,86,.2);padding-top:7px;margin-top:3px"><span style="font-weight:700;font-size:13px">Toplam</span><span style="font-weight:700;font-size:15px;font-family:var(--mono)" id="v-tot">0 TL</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="mp" id="mp-dagilim">
+      <div class="dagcard"><div class="dagcard-t">Hesaplama</div>
+        <div class="dr"><span class="dl">Vekalet kararı</span><span class="dv" id="dv-vek">0 TL</span></div>
+        <div class="dr"><span class="dl">İlyas masrafları</span><span class="dv neg" id="dv-ilm">- 0 TL</span></div>
+        <div class="dr"><span class="dl">Yakup masrafları</span><span class="dv neg" id="dv-yam">- 0 TL</span></div>
+        <div class="dr dr-tot"><span style="font-weight:600">Kalan (eşit paylaşılır)</span><span style="font-size:16px;font-weight:700;font-family:var(--mono)" id="dv-kal">0 TL</span></div>
+        <div class="dr"><span class="dl">Kişi başı pay</span><span class="dv pos" id="dv-pay">0 TL</span></div>
+        <div class="pbar"><div class="pfill" id="dpfill" style="width:0%"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--tx3);margin-top:3px"><span>masraf sonrası</span><span id="dv-pct">—</span><span>vekalet toplam</span></div>
+      </div>
+      <div class="split2">
+        <div class="sbox il"><div class="sname il">İlyas</div><div class="samt" id="s-il">0 TL</div><div class="sdet" id="s-il-d">—</div></div>
+        <div class="sbox ya"><div class="sname ya">Yakup</div><div class="samt" id="s-ya">0 TL</div><div class="sdet" id="s-ya-d">—</div></div>
+      </div>
+      <div class="fbox" id="fbox" style="margin-top:13px">Vekalet ve masraf bilgilerini doldurun...</div>
+      <div class="infobox">Not: Hesap, Vekalet Ucreti ve Masraflar sekmelerindeki verilere gore otomatik guncellenir.</div>
+    </div>
+  </div>
+  <div class="mfoot">
+    <button class="btn-g btn-del" id="btn-sil" style="display:none" onclick="deleteDosya()">Dosyayı Sil</button>
+    <div style="flex:1"></div>
+    <button class="btn-g" onclick="closeModal()">İptal</button>
+    <button class="btn-p" onclick="saveModal()">Kaydet</button>
+  </div>
+</div>
+</div>
+
+<script id="D" type="application/json">[{"id": 0, "muvekkil": "İLYAS YILANLI", "sigorta": "SOMPO", "tahkimNo": "2025.E.268099", "policeNo": "311000246022476", "kazaTarihi": "2024-12-13", "ihtarTarihi": "2025-04-14", "ihtarBitis": "2025-05-07", "muvPlaka": "34 BPY 538", "karsiPlaka": "34 YR 9406", "masraflar": "1110 tl eksper+468 tahkim", "kararBilgi": "", "dtype": "Hasar", "stage": "Karar", "durum": {"basvuru": true, "hakem": true, "bilirkisi": true, "karar": true}}, {"id": 1, "muvekkil": "EKREM DÜNDAR", "sigorta": "MAPFRE", "tahkimNo": "2025.E.199760", "policeNo": "4102300296405", "kazaTarihi": "2024-03-31", "ihtarTarihi": "2024-12-13", "ihtarBitis": "", "muvPlaka": "06 BEK 058", "karsiPlaka": "34 NV 261", "masraflar": "", "kararBilgi": "", "dtype": "Hasar", "stage": "Karar", "durum": {"basvuru": true, "hakem": true, "bilirkisi": true, "karar": true}}, {"id": 2, "muvekkil": "MAHMUT SAMİ TOPÇU", "sigorta": "QUİCK", "tahkimNo": "2025.E.181631", "policeNo": "100000287445491", "kazaTarihi": "2024-10-28", "ihtarTarihi": "2024-12-31", "ihtarBitis": "", "muvPlaka": "34 BFP 413", "karsiPlaka": "70 AY 678", "masraflar": "1.110 eksper+468 tahkim+1145 bilirkişi", "kararBilgi": "30000 TL", "dtype": "Hasar", "stage": "Karar", "durum": {"basvuru": true, "hakem": true, "bilirkisi": true, "karar": true}}, {"id": 3, "muvekkil": "AYHAN ULUÇ", "sigorta": "AKSA", "tahkimNo": "2025.E.181856", "policeNo": "457435572", "kazaTarihi": "2024-08-26", "ihtarTarihi": "2024-12-11", "ihtarBitis": "", "muvPlaka": "34 LC 6066", "karsiPlaka": "34 KBS 960", "masraflar": "5.500 kaportaci+3000+468 tahkim+400 islah", "kararBilgi": "", "dtype": "Hasar", "stage": "Karar", "durum": {"basvuru": true, "hakem": true, "bilirkisi": true, "karar": true}}, {"id": 4, "muvekkil": "RAMAZAN KOC", "sigorta": "Türkiye Sigorta", "tahkimNo": "2025.E.213945", "policeNo": "730585187", "kazaTarihi": "2024-07-10", "ihtarTarihi": "2025-01-03", "ihtarBitis": "", "muvPlaka": "34 S 1862", "karsiPlaka": "34 UJ 8548", "masraflar": "800 eksper+468 tahkim+1255 itiraz+1443 bilirkisi", "kararBilgi": "Karar 35000 TL Vekalet 35000 TL Giderler 5063 TL", "dtype": "Hasar", "stage": "Karar", "durum": {"basvuru": true, "hakem": true, "bilirkisi": true, "karar": true}}, {"id": 5, "muvekkil": "TUNCAY SARI", "sigorta": "TÜRKİYE KATILIM", "tahkimNo": "2025.E.182509", "policeNo": "1628694", "kazaTarihi": "2024-07-25", "ihtarTarihi": "2024-10-22", "ihtarBitis": "", "muvPlaka": "34 PE 6577", "karsiPlaka": "34 CTF 68", "masraflar": "1.110 eksper+468 tahkim+1145 bilirkisi+400 islah", "kararBilgi": "", "dtype": "Hasar", "stage": "Karar", "durum": {"basvuru": true, "hakem": true, "bilirkisi": true, "karar": true}}, {"id": 6, "muvekkil": "AYSE TEKİN", "sigorta": "AXA", "tahkimNo": "", "policeNo": "478339684", "kazaTarihi": "2025-01-22", "ihtarTarihi": "2025-04-22", "ihtarBitis": "", "muvPlaka": "34 DTD 741", "karsiPlaka": "34 DAK 642", "masraflar": "", "kararBilgi": "", "dtype": "Hasar", "stage": "Basvuru", "durum": {"basvuru": false, "hakem": false, "bilirkisi": false, "karar": false}}, {"id": 7, "muvekkil": "AYSE TEKİN", "sigorta": "Türkiye Sigorta", "tahkimNo": "", "dosyaNo": "13/11477267", "policeNo": "712194421", "kazaTarihi": "2025-01-03", "ihtarTarihi": "2025-04-24", "ihtarBitis": "", "muvPlaka": "34 DTD 741", "karsiPlaka": "34 KGC 063", "masraflar": "", "kararBilgi": "", "dtype": "Değer Kaybı", "stage": "Basvuru", "durum": {"basvuru": false, "hakem": false, "bilirkisi": false, "karar": false}}, {"id": 8, "muvekkil": "AYSE TEKİN", "sigorta": "BEREKET", "tahkimNo": "2025.E.500225", "dosyaNo": "749499", "policeNo": "82887000510", "kazaTarihi": "2025-03-03", "ihtarTarihi": "2025-06-13", "ihtarBitis": "2025-07-03", "muvPlaka": "34 DTD 741", "karsiPlaka": "34 LY 300", "masraflar": "910 basvuru+276 baro pulu+411 islah+2744 bilirkisi", "kararBilgi": "8414 TL Ayse Tekine odenecek", "dtype": "Hasar", "stage": "Karar", "durum": {"basvuru": true, "hakem": true, "bilirkisi": true, "karar": true}}, {"id": 9, "muvekkil": "HARUN İRHAN", "sigorta": "TÜRKİYE KATILIM", "tahkimNo": "2025.E.317763", "dosyaNo": "294649", "policeNo": "2712117", "kazaTarihi": "2024-12-03", "ihtarTarihi": "2025-05-06", "ihtarBitis": "", "muvPlaka": "34 BAE 501", "karsiPlaka": "34 FJL 737", "masraflar": "465 basvuru+800 islah+1145 bilirkisi", "kararBilgi": "79030 TL odendi", "dtype": "Hasar", "stage": "Karar", "durum": {"basvuru": true, "hakem": true, "bilirkisi": true, "karar": true}}, {"id": 10, "muvekkil": "İSMAİL ÖZALP", "sigorta": "EMAA", "tahkimNo": "2026.E.88078", "dosyaNo": "202510104871", "policeNo": "2829515", "kazaTarihi": "2025-04-19", "ihtarTarihi": "2025-05-20", "ihtarBitis": "", "muvPlaka": "34 FTC 503", "karsiPlaka": "28 ACN 990", "masraflar": "936 basvuru+3177 deger bilirkisi+2744 hasar bilirkisi", "kararBilgi": "", "dtype": "Hasar + Değer", "stage": "Basvuru", "durum": {"basvuru": false, "hakem": false, "bilirkisi": false, "karar": false}}, {"id": 12, "muvekkil": "Yakup AYBAKAN", "sigorta": "ETHİCA", "tahkimNo": "2025.E.429335", "dosyaNo": "21/12335902", "policeNo": "64388779", "kazaTarihi": "2025-03-23", "ihtarTarihi": "2025-06-12", "ihtarBitis": "2025-07-04", "muvPlaka": "34ATC78", "karsiPlaka": "34GUU364", "masraflar": "", "kararBilgi": "", "dtype": "Hasar", "stage": "Hakem", "durum": {"basvuru": true, "hakem": true, "bilirkisi": false, "karar": false}}, {"id": 13, "muvekkil": "Mehmet Akif KIRMAN", "sigorta": "TÜRK NİPPON", "tahkimNo": "2025.E.486639", "dosyaNo": "20250101117", "policeNo": "153111566", "kazaTarihi": "2025-05-30", "ihtarTarihi": "2025-07-20", "ihtarBitis": "2025-08-08", "muvPlaka": "01CMY30", "karsiPlaka": "41KB071", "masraflar": "İlyas 936 basvuru+İlyas 4190 bilirkisi+Yakup 276 baro pulu", "kararBilgi": "İlyas 5951 Yakup 276", "dtype": "Hasar", "stage": "Karar", "durum": {"basvuru": true, "hakem": true, "bilirkisi": true, "karar": true}}, {"id": 15, "muvekkil": "YASEMİN ÖZKUL", "sigorta": "AK SİGORTA", "tahkimNo": "2025.E.561720", "dosyaNo": "50437501", "policeNo": "100000288217492", "kazaTarihi": "2025-03-06", "ihtarTarihi": "2025-09-04", "ihtarBitis": "2025-09-26", "muvPlaka": "42AON784", "karsiPlaka": "34 RS 3865", "masraflar": "İlyas 940 basvuru+İlyas 1445 bilirkisi+Yakup 276 baro pulu", "kararBilgi": "İlyas 3220 Yakup 276", "dtype": "Hasar", "stage": "Karar", "durum": {"basvuru": true, "hakem": true, "bilirkisi": true, "karar": true}}, {"id": 17, "muvekkil": "YASEMİN ÖZKUL", "sigorta": "ANKARA SİGORTA", "tahkimNo": "2025.E.486712", "dosyaNo": "1635509", "policeNo": "101911933", "kazaTarihi": "2025-01-11", "ihtarTarihi": "2025-08-01", "ihtarBitis": "2025-08-22", "muvPlaka": "42AON784", "karsiPlaka": "34HCP628", "masraflar": "İlyas 936 basvuru+Yakup 276 baro pulu+İlyas 4190 bilirkisi", "kararBilgi": "İlyas 5126 Yakup 276", "dtype": "Hasar", "stage": "Bilirkisi", "durum": {"basvuru": true, "hakem": true, "bilirkisi": true, "karar": false}}, {"id": 19, "muvekkil": "HAVA BURMA", "sigorta": "EUREKO", "tahkimNo": "2025.E.449983", "dosyaNo": "10102502345", "policeNo": "124967724", "kazaTarihi": "2025-04-27", "ihtarTarihi": "2025-07-16", "ihtarBitis": "", "muvPlaka": "34KTV929", "karsiPlaka": "34GLT148", "masraflar": "468 basvuru+1445 bilirkisi+823 islah", "kararBilgi": "", "dtype": "Hasar", "stage": "Karar", "durum": {"basvuru": true, "hakem": true, "bilirkisi": true, "karar": true}}, {"id": 21, "muvekkil": "NUR SENA CELİK", "sigorta": "QUİCK SİGORTA", "tahkimNo": "2025.E.561797", "dosyaNo": "741117", "policeNo": "100000261004109", "kazaTarihi": "2024-12-31", "ihtarTarihi": "2025-09-08", "ihtarBitis": "2025-09-29", "muvPlaka": "34 EAS174", "karsiPlaka": "34 KUD 789", "masraflar": "İlyas 468 basvuru+Yakup 138 baro pulu+İlyas 4665 bilirkisi", "kararBilgi": "Kisi Basi 42978", "dtype": "Hasar", "stage": "Bilirkisi", "durum": {"basvuru": true, "hakem": true, "bilirkisi": true, "karar": false}}, {"id": 23, "muvekkil": "TUGBA KAYA", "sigorta": "MAPFRE", "tahkimNo": "2025.E.696481", "dosyaNo": "4100961463", "policeNo": "4102400358350", "kazaTarihi": "2025-03-26", "ihtarTarihi": "2025-06-16", "ihtarBitis": "", "muvPlaka": "34NT1853", "karsiPlaka": "34KKU534", "masraflar": "936 basvuru+272 baro pulu", "kararBilgi": "", "dtype": "Hasar", "stage": "Hakem", "durum": {"basvuru": true, "hakem": true, "bilirkisi": false, "karar": false}}, {"id": 24, "muvekkil": "NİHAT AKIN", "sigorta": "", "tahkimNo": "", "dosyaNo": "13475080240001", "policeNo": "72515865", "kazaTarihi": "2025-05-13", "ihtarTarihi": "", "ihtarBitis": "", "muvPlaka": "34APM02", "karsiPlaka": "38GG409", "masraflar": "", "kararBilgi": "", "dtype": "Hasar", "stage": "Basvuru", "durum": {"basvuru": false, "hakem": false, "bilirkisi": false, "karar": false}}, {"id": 25, "muvekkil": "ERKAN GÜNTAV", "sigorta": "QUİCK SİGORTA", "tahkimNo": "2025.E.561483", "dosyaNo": "40/8583125", "policeNo": "100000257770606", "kazaTarihi": "2025-03-22", "ihtarTarihi": "2025-06-23", "ihtarBitis": "", "muvPlaka": "34MHU645", "karsiPlaka": "34GJA943", "masraflar": "468 basvuru+138 baro pulu+823 bilirkisi", "kararBilgi": "48868", "dtype": "Hasar", "stage": "Bilirkisi", "durum": {"basvuru": false, "hakem": true, "bilirkisi": true, "karar": false}}, {"id": 27, "muvekkil": "AYDIN ECE", "sigorta": "RAY SİGORTA", "tahkimNo": "2025.E.629177", "dosyaNo": "11202513609", "policeNo": "1318795701", "kazaTarihi": "2025-08-23", "ihtarTarihi": "2025-09-30", "ihtarBitis": "2025-10-22", "muvPlaka": "34DKH514", "karsiPlaka": "71ACF512", "masraflar": "İlyas 468 basvuru+Yakup 138 pul", "kararBilgi": "", "dtype": "Değer Kaybı", "stage": "Basvuru", "durum": {"basvuru": true, "hakem": false, "bilirkisi": false, "karar": false}}, {"id": 29, "muvekkil": "GÜLTEN ELEFTOZ", "sigorta": "AXA SİGORTA", "tahkimNo": "2025.E.726873", "dosyaNo": "11870053", "policeNo": "523725884", "kazaTarihi": "2025-10-01", "ihtarTarihi": "2025-11-10", "ihtarBitis": "2025-12-02", "muvPlaka": "46AET321", "karsiPlaka": "34FYP230", "masraflar": "İlyas 468 basvuru+Yakup 138 pul+İlyas 4263 bilirkisi", "kararBilgi": "", "dtype": "Hasar", "stage": "Hakem", "durum": {"basvuru": true, "hakem": true, "bilirkisi": false, "karar": false}}, {"id": 30, "muvekkil": "ERCAN YESİLYURT", "sigorta": "ANADOLU", "tahkimNo": "2025.E.737514", "dosyaNo": "14832753250001", "policeNo": "1483275325", "kazaTarihi": "2025-10-08", "ihtarTarihi": "2025-11-25", "ihtarBitis": "2025-12-17", "muvPlaka": "34LCP199", "karsiPlaka": "34SV4274", "masraflar": "İlyas 468 basvuru+İlyas 1936 bilirkisi+Yakup 138 pul", "kararBilgi": "Yakup 138 İlyas 3599", "dtype": "Hasar", "stage": "Bilirkisi", "durum": {"basvuru": true, "hakem": true, "bilirkisi": true, "karar": false}}, {"id": 32, "muvekkil": "Hasan GÖRAL", "sigorta": "QUİCK SİGORTA", "tahkimNo": "2026.E.211027", "dosyaNo": "2025351026455", "policeNo": "100000366109989", "kazaTarihi": "2025-06-05", "ihtarTarihi": "2026-03-03", "ihtarBitis": "2026-03-26", "muvPlaka": "34ZG6989", "karsiPlaka": "34DM7862", "masraflar": "İlyas 612 basvuru+İlyas 162 baro pulu+İlyas 4265 bilirkisi", "kararBilgi": "", "dtype": "Hasar", "stage": "Bilirkisi", "durum": {"basvuru": true, "hakem": true, "bilirkisi": true, "karar": false}}, {"id": 33, "muvekkil": "BÜLENT KARATAS", "sigorta": "ETHİCA", "tahkimNo": "2026.E.45757", "dosyaNo": "11104698", "policeNo": "73284604", "kazaTarihi": "2025-11-25", "ihtarTarihi": "2025-12-16", "ihtarBitis": "2026-01-08", "muvPlaka": "34SA119", "karsiPlaka": "27BB807", "masraflar": "İlyas 613 basvuru+Yakup 164 pul+Yakup 4200 bilirkisi", "kararBilgi": "İlyas 4800 Yakup 164", "dtype": "Hasar", "stage": "Bilirkisi", "durum": {"basvuru": true, "hakem": true, "bilirkisi": true, "karar": false}}, {"id": 34, "muvekkil": "Cihat BARLIK", "sigorta": "ANKARA SİGORTA", "tahkimNo": "", "dosyaNo": "1725287", "policeNo": "134332097", "kazaTarihi": "2026-02-01", "ihtarTarihi": "2026-03-30", "ihtarBitis": "2026-04-21", "muvPlaka": "01SC985", "karsiPlaka": "34FMS135", "masraflar": "", "kararBilgi": "", "dtype": "Hasar", "stage": "Basvuru", "durum": {"basvuru": false, "hakem": false, "bilirkisi": false, "karar": false}}]</script>
+<script>
+
+(function() {
+  var RAW = JSON.parse(document.getElementById('D').textContent);
+  var dosyalar = RAW.map(function(r) {
+    var d = {};
+    for (var k in r) d[k] = r[k];
+    d.masrafKalemleri = [];
+    d.vekalet = [];
+    d.odemeler = [];
+    d.notlar = r.kararBilgi || '';
+    return d;
+  });
+  var currentId = null;
+  var stageFilter = '';
+
+  function tl(n) { return Math.round(n).toLocaleString('tr-TR') + ' TL'; }
+  function fd(s) { if (!s) return '-'; var p = s.split('-'); return p.length===3 ? p[2]+'.'+p[1]+'.'+p[0] : s; }
+  function g(id) { return document.getElementById(id); }
+  function ce(tag, cls, txt) { var e = document.createElement(tag); if(cls) e.className = cls; if(txt !== undefined) e.textContent = txt; return e; }
+  function ceh(tag, cls, html) { var e = document.createElement(tag); if(cls) e.className = cls; if(html !== undefined) e.innerHTML = html; return e; }
+  function daysUntil(s) { if (!s) return null; return Math.ceil((new Date(s) - new Date()) / 86400000); }
+  
+  function dtClass(d) { return d==='Hasar'?'hasar':d==='Değer Kaybı'?'deger':'hd'; }
+  function dtBadge(d) { return d==='Hasar'?'dt-h':d==='Değer Kaybı'?'dt-d':'dt-hd'; }
+  function dtLabel(d) { return d==='Hasar'?'Hasar':d==='Değer Kaybı'?'Deger':'H+D'; }
+  function stageLabel(s) { return s==='Hakem'?'Hakem Atandi':s==='Basvuru'?'Basvuru':s==='Bilirkisi'?'Bilirkisi':'Karar'; }
+  function stageTR(s) { 
+    if(s==='Karar') return 'Karar';
+    if(s==='Bilirkisi') return 'Bilirkişi';
+    if(s==='Hakem') return 'Hakem Atandı';
+    return 'Başvuru';
+  }
+  function stageBadge(s) { return s==='Basvuru'?'b-gray':s==='Hakem'?'b-blue':s==='Bilirkisi'?'b-amber':'b-green'; }
+  
+  function calcMasraf(d) {
+    var il=0,ya=0;
+    d.masrafKalemleri.forEach(function(m){var v=parseFloat(m.tutar)||0;if(m.avukat==='Ilyas')il+=v;else ya+=v;});
+    return {il:il,ya:ya,tot:il+ya};
+  }
+  function calcVekalet(d) {
+    var vek=0,harc=0;
+    d.vekalet.forEach(function(v){var a=parseFloat(v.tutar)||0;if(v.kalem==='Vekalet')vek+=a;else harc+=a;});
+    return {vek:vek,harc:harc,tot:vek+harc};
+  }
+  function find(id) { return dosyalar.filter(function(x){return x.id===id;})[0]; }
+
+  // METRICS
+  function renderMetrics() {
+    var total=dosyalar.length,karar=0,hasar=0,deger=0,hd=0,totV=0,totM=0,ilM=0,yaM=0,vadeli=0;
+    var bil=0,hak=0,bas=0;
+    dosyalar.forEach(function(d){
+      if(d.stage==='Karar')karar++;
+      if(d.dtype==='Hasar')hasar++;else if(d.dtype==='Değer Kaybı')deger++;else hd++;
+      var v=calcVekalet(d);totV+=v.tot;
+      var m=calcMasraf(d);totM+=m.tot;ilM+=m.il;yaM+=m.ya;
+      var dy=daysUntil(d.ihtarBitis);if(dy!==null&&dy>=0&&dy<=30)vadeli++;
+      if(d.stage==='Bilirkisi')bil++;
+      if(d.stage==='Hakem')hak++;
+      if(d.stage==='Basvuru')bas++;
+    });
+    var mc = g('metrics'); mc.innerHTML = '';
+    function addMC(color,label,val,sub){
+      var div=ce('div','mc');
+      var bar=ce('div','mc-bar'); bar.style.background=color; div.appendChild(bar);
+      div.appendChild(ce('div','mc-l',label));
+      div.appendChild(ce('div','mc-v',String(val)));
+      div.appendChild(ce('div','mc-s',sub));
+      mc.appendChild(div);
+    }
+    addMC('var(--bl)','Toplam Dosya',total,hasar+'H / '+deger+'D / '+hd+'H+D');
+    addMC('var(--te)','Toplam Vekalet',totV>0?tl(totV):'-','buroya gelen toplam');
+    addMC('#639922','Toplam Masraf',totM>0?tl(totM):'-','Ilyas: '+tl(ilM)+' Yakup: '+tl(yaM));
+    addMC('var(--pu)','Vadesi Yakin',vadeli,'30 gun icinde ihtar bitis');
+    addMC('var(--am)','Aktif Dosya',total-karar,bil+' bilirkisi '+hak+' hakem '+bas+' basvuru');
+
+    var ss=g('sb-stats'); ss.innerHTML='';
+    [['Toplam',total],['Karar',karar],['Bilirkisi',bil],['Hakem',hak],['Basvuru',bas]].forEach(function(p){
+      var row=ce('div','sb-stat');
+      row.appendChild(ce('span','',p[0]));
+      row.appendChild(ce('b','',String(p[1])));
+      ss.appendChild(row);
+    });
+  }
+
+  // PIPELINE
+  function renderPipeline() {
+    var filtered = stageFilter ? dosyalar.filter(function(d){return d.stage===stageFilter;}) : dosyalar;
+    var groupMap={};
+    filtered.forEach(function(d){
+      var key=d.muvekkil+'||'+d.stage;
+      if(!groupMap[key]) groupMap[key]={muvekkil:d.muvekkil,stage:d.stage,files:[]};
+      groupMap[key].files.push(d);
+    });
+    var groups=Object.keys(groupMap).map(function(k){return groupMap[k];});
+    var stages=['Basvuru','Hakem','Bilirkisi','Karar'];
+    var pipe=g('pipeline'); pipe.innerHTML='';
+
+    stages.forEach(function(stage){
+      var sg=groups.filter(function(gr){return gr.stage===stage;});
+      var count=sg.reduce(function(a,gr){return a+gr.files.length;},0);
+      var col=ce('div','pcol');
+      var head=ce('div','phead');
+      head.appendChild(ce('span','ptit',stageTR(stage)));
+      var badge=ce('span','badge '+stageBadge(stage),String(count));
+      head.appendChild(badge);
+      col.appendChild(head);
+
+      if(!sg.length){
+        col.appendChild(ce('div','empty','Dosya yok'));
+      } else {
+        sg.forEach(function(gr){
+          var mg=ce('div','mg');
+          var mghdr=ce('div','mg-hdr');
+          var nm=ce('div','mg-name',gr.muvekkil); nm.title=gr.muvekkil;
+          mghdr.appendChild(nm);
+          mghdr.appendChild(ce('div','mg-meta',gr.files.length+' dosya'));
+          mg.appendChild(mghdr);
+          var mgb=ce('div','mg-body');
+          gr.files.forEach(function(d){
+            var dc=ce('div','dc '+dtClass(d.dtype));
+            dc.onclick=(function(id){return function(){openModal(id);};})(d.id);
+            var badge2=ce('span','dt-b '+dtBadge(d.dtype),dtLabel(d.dtype));
+            dc.appendChild(badge2);
+            var sig=ce('span','dc-sig',d.sigorta||'-');
+            dc.appendChild(sig);
+            var days=d.ihtarBitis?daysUntil(d.ihtarBitis):null;
+            if(days!==null&&days>=0&&days<=10){
+              var al=ce('span','alrt',days+'g');
+              dc.appendChild(al);
+            }
+            mgb.appendChild(dc);
+          });
+          mg.appendChild(mgb);
+          col.appendChild(mg);
+        });
+      }
+      pipe.appendChild(col);
+    });
+  }
+
+  // TABLE
+  function renderTable() {
+    var q=(g('srch').value||'').toLowerCase();
+    var dtype=g('flt-dtype').value;
+    var stage=g('flt-stage').value;
+    var rows=dosyalar.filter(function(d){
+      if(q&&[d.muvekkil,d.sigorta,d.tahkimNo,d.dosyaNo||''].join(' ').toLowerCase().indexOf(q)===-1)return false;
+      if(dtype&&d.dtype!==dtype)return false;
+      if(stage&&d.stage!==stage)return false;
+      return true;
+    });
+    var tbody=g('tbody'); tbody.innerHTML='';
+    if(!rows.length){
+      var tr=document.createElement('tr');
+      var td=document.createElement('td'); td.colSpan=8; td.textContent='Sonuc bulunamadi'; td.style.cssText='text-align:center;padding:20px;color:var(--tx3)';
+      tr.appendChild(td); tbody.appendChild(tr); return;
+    }
+    rows.forEach(function(d){
+      var tr=document.createElement('tr');
+      function td(content,style){var t=document.createElement('td');if(typeof content==='string')t.textContent=content;else t.appendChild(content);if(style)t.style.cssText=style;return t;}
+      function tde(el){var t=document.createElement('td');t.appendChild(el);return t;}
+      
+      var n1=ce('div','t-name',d.muvekkil);
+      var n2=ce('div','t-sub',d.muvPlaka||'');
+      var ndiv=ce('div'); ndiv.appendChild(n1); ndiv.appendChild(n2);
+      tr.appendChild(tde(ndiv));
+      
+      tr.appendChild(tde(ce('span','dt-b '+dtBadge(d.dtype),dtLabel(d.dtype))));
+      tr.appendChild(td(d.sigorta||'-','font-size:12px'));
+      tr.appendChild(td(d.tahkimNo||'-','font-size:11px;color:var(--tx3)'));
+      tr.appendChild(tde(ce('span','sp '+stageBadge(d.stage),stageTR(d.stage))));
+      
+      var itd=document.createElement('td'); itd.style.fontSize='11px';
+      if(d.ihtarBitis){
+        itd.textContent=fd(d.ihtarBitis);
+        var days=daysUntil(d.ihtarBitis);
+        if(days!==null&&days>=0&&days<=14){var al=ce('span','alrt',days+'g');itd.appendChild(al);}
+      } else { itd.textContent='-'; }
+      tr.appendChild(itd);
+      
+      var short=d.masraflar?(d.masraflar.length>45?d.masraflar.substring(0,45)+'...':d.masraflar):'-';
+      tr.appendChild(td(short,'font-size:11px;color:var(--tx2)'));
+      
+      var btn=ce('button','btn-g btn-sm','Düzenle');
+      btn.onclick=(function(id){return function(){openModal(id);};})(d.id);
+      tr.appendChild(tde(btn));
+      
+      tbody.appendChild(tr);
+    });
+  }
+
+  // MODAL
+  function openModal(id) {
+    currentId=id;
+    var d=find(id);
+    if(d){
+      g('m-title').textContent=d.muvekkil+' - Duzenle';
+      g('m-sub').textContent=(d.sigorta||'')+(d.tahkimNo?' - '+d.tahkimNo:'');
+      g('btn-sil').style.display='inline-block';
+      var dtMap={'Hasar':'dt-h','Değer Kaybı':'dt-d','Hasar + Değer':'dt-hd'};
+      var dtEl=g(dtMap[d.dtype]||'dt-h'); if(dtEl)dtEl.checked=true;
+      g('d1').checked=d.durum.basvuru; g('d2').checked=d.durum.hakem;
+      g('d3').checked=d.durum.bilirkisi; g('d4').checked=d.durum.karar;
+      g('f-muv').value=d.muvekkil||''; g('f-tckn').value=d.tckn||'';
+      g('f-sig').value=d.sigorta||''; g('f-tah').value=d.tahkimNo||'';
+      g('f-dos').value=d.dosyaNo||''; g('f-pol').value=d.policeNo||'';
+      g('f-mp').value=d.muvPlaka||''; g('f-kp').value=d.karsiPlaka||'';
+      g('f-kz').value=d.kazaTarihi||''; g('f-ih').value=d.ihtarTarihi||'';
+      g('f-ib').value=d.ihtarBitis||''; g('f-bk').value=d.bakiyeHasar||'';
+      g('f-not').value=d.notlar||'';
+      renderML(d); renderVL(d); renderOL(d);
+    } else {
+      g('m-title').textContent='Yeni Dosya';
+      g('m-sub').textContent='';
+      g('btn-sil').style.display='none';
+      g('dt-h').checked=true;
+      ['d1','d2','d3','d4'].forEach(function(i){g(i).checked=false;});
+      ['f-muv','f-tckn','f-sig','f-tah','f-dos','f-pol','f-mp','f-kp','f-kz','f-ih','f-ib','f-bk','f-not'].forEach(function(i){g(i).value='';});
+      g('mlist').innerHTML=''; g('vlist').innerHTML=''; g('olist').innerHTML='';
+    }
+    smtab('bilgi',document.querySelector('.mt'));
+    recalc();
+    g('overlay').classList.add('open');
+  }
+  window.openModal=openModal;
+
+  window.closeModal=function(){g('overlay').classList.remove('open');currentId=null;};
+  
+  window.saveModal=function(){
+    if(currentId===null)return;
+    var d=find(currentId); if(!d)return;
+    d.muvekkil=g('f-muv').value; d.sigorta=g('f-sig').value;
+    d.tahkimNo=g('f-tah').value; d.dosyaNo=g('f-dos').value;
+    d.policeNo=g('f-pol').value; d.muvPlaka=g('f-mp').value;
+    d.karsiPlaka=g('f-kp').value; d.kazaTarihi=g('f-kz').value;
+    d.ihtarTarihi=g('f-ih').value; d.ihtarBitis=g('f-ib').value;
+    d.notlar=g('f-not').value;
+    var sel=document.querySelector('input[name="dt"]:checked');
+    if(sel)d.dtype=sel.value;
+    d.durum={basvuru:g('d1').checked,hakem:g('d2').checked,bilirkisi:g('d3').checked,karar:g('d4').checked};
+    if(d.durum.karar)d.stage='Karar';
+    else if(d.durum.bilirkisi)d.stage='Bilirkisi';
+    else if(d.durum.hakem)d.stage='Hakem';
+    else d.stage='Basvuru';
+    window.closeModal(); renderAll();
+  };
+
+  window.deleteDosya=function(){
+    if(currentId===null)return;
+    var d=find(currentId); if(!d)return;
+    if(!confirm(d.muvekkil+' dosyasi silinecek?'))return;
+    dosyalar=dosyalar.filter(function(x){return x.id!==currentId;});
+    window.closeModal(); renderAll();
+  };
+
+  window.openNew=function(){
+    var newId=Math.max.apply(null,dosyalar.map(function(d){return d.id;}))+1;
+    dosyalar.push({id:newId,muvekkil:'Yeni Muvekkil',sigorta:'',tahkimNo:'',dosyaNo:'',policeNo:'',kazaTarihi:'',ihtarTarihi:'',ihtarBitis:'',muvPlaka:'',karsiPlaka:'',masraflar:'',kararBilgi:'',dtype:'Hasar',stage:'Basvuru',durum:{basvuru:false,hakem:false,bilirkisi:false,karar:false},masrafKalemleri:[],vekalet:[],odemeler:[],notlar:''});
+    openModal(newId);
+  };
+
+  window.smtab=function(t,btn){
+    document.querySelectorAll('.mt').forEach(function(b){b.classList.remove('active');});
+    document.querySelectorAll('.mp').forEach(function(p){p.classList.remove('active');});
+    if(btn)btn.classList.add('active');
+    g('mp-'+t).classList.add('active');
+    recalc();
+  };
+
+  // MASRAF
+  var MT=['Basvuru ucreti','Eksper ucreti','Bilirkisi ucreti','Baro pulu','Itiraz ucreti','Islah ucreti','Vekalet ucreti','Diger'];
+  function mkSel(opts,val,onch){
+    var s=document.createElement('select'); s.className='fi';
+    opts.forEach(function(o){var op=document.createElement('option');op.value=o;op.textContent=o;if(o===val)op.selected=true;s.appendChild(op);});
+    s.onchange=onch; return s;
+  }
+  function mkInput(type,val,oninp){var i=document.createElement('input');i.type=type;i.className='fi';i.value=val;i.oninput=oninp;return i;}
+  function mkDelBtn(fn){var b=ce('button','del-btn','x');b.onclick=fn;return b;}
+
+  function renderML(d){
+    var ml=g('mlist'); ml.innerHTML='';
+    d.masrafKalemleri.forEach(function(m,i){
+      var row=ce('div','mr-m');
+      row.appendChild(mkSel(MT,m.kalem,function(e){var dd=find(currentId);if(dd)dd.masrafKalemleri[i].kalem=e.target.value;updMS();}));
+      row.appendChild(mkSel(['Ilyas','Yakup'],m.avukat,function(e){var dd=find(currentId);if(dd){dd.masrafKalemleri[i].avukat=e.target.value;updMS();recalc();}}));
+      row.appendChild(mkInput('number',m.tutar||0,function(e){var dd=find(currentId);if(dd){dd.masrafKalemleri[i].tutar=e.target.value;updMS();recalc();}}));
+      row.appendChild(mkDelBtn(function(idx){return function(){var dd=find(currentId);if(dd){dd.masrafKalemleri.splice(idx,1);renderML(dd);recalc();}}}(i)));
+      ml.appendChild(row);
+    });
+    updMS();
+  }
+  function updMS(){
+    var d=find(currentId); if(!d)return;
+    var m=calcMasraf(d);
+    g('ms-il').textContent=tl(m.il); g('ms-ya').textContent=tl(m.ya); g('ms-tot').textContent=tl(m.tot);
+  }
+  window.addMasraf=function(){var d=find(currentId);if(!d)return;d.masrafKalemleri.push({kalem:'Basvuru ucreti',avukat:'Ilyas',tutar:0});renderML(d);recalc();};
+
+  // VEKALET
+  var VT=['Vekalet','Basvuru harci','Bilirkisi harci','Baro pulu','Islah harci','Diger harc'];
+  function renderVL(d){
+    var vl=g('vlist'); vl.innerHTML='';
+    d.vekalet.forEach(function(v,i){
+      var row=ce('div','mr-v');
+      row.appendChild(mkSel(VT,v.kalem,function(e){var dd=find(currentId);if(dd){dd.vekalet[i].kalem=e.target.value;updVS();recalc();}}));
+      row.appendChild(mkInput('number',v.tutar||0,function(e){var dd=find(currentId);if(dd){dd.vekalet[i].tutar=e.target.value;updVS();recalc();}}));
+      row.appendChild(mkDelBtn(function(idx){return function(){var dd=find(currentId);if(dd){dd.vekalet.splice(idx,1);renderVL(dd);recalc();}}}(i)));
+      vl.appendChild(row);
+    });
+    updVS();
+  }
+  function updVS(){
+    var d=find(currentId); if(!d)return;
+    var v=calcVekalet(d);
+    g('v-vek').textContent=tl(v.vek); g('v-harc').textContent=tl(v.harc); g('v-tot').textContent=tl(v.tot);
+  }
+  window.addVekalet=function(){var d=find(currentId);if(!d)return;d.vekalet.push({kalem:'Vekalet',tutar:0});renderVL(d);recalc();};
+
+  // ODEME
+  function renderOL(d){
+    var ol=g('olist'); ol.innerHTML='';
+    d.odemeler.forEach(function(o,i){
+      var row=ce('div','orow');
+      var grid=ce('div','or-g');
+      var l=ce('div'); l.appendChild(ce('div','o-amt',tl(o.tutar))); l.appendChild(ce('div','o-type',o.tur));
+      var r=ce('div'); r.appendChild(ce('div','o-date',fd(o.tarih))); r.appendChild(ce('div','o-dir',o.yon));
+      grid.appendChild(l); grid.appendChild(r);
+      grid.appendChild(mkDelBtn(function(idx){return function(){var dd=find(currentId);if(dd){dd.odemeler.splice(idx,1);renderOL(dd);}}}(i)));
+      row.appendChild(grid);
+      if(o.not) row.appendChild(ce('div','o-note',o.not));
+      ol.appendChild(row);
+    });
+  }
+  window.addOdeme=function(){
+    var tutar=parseFloat(g('nt').value); if(!tutar)return;
+    var d=find(currentId); if(!d)return;
+    d.odemeler.push({tutar:tutar,tarih:g('nd').value,yon:g('ny').value,tur:g('ntur').value,not:g('nn').value});
+    renderOL(d); g('nt').value=''; g('nn').value='';
+  };
+
+  // RECALC
+  function recalc(){
+    var d=find(currentId); if(!d)return;
+    var m=calcMasraf(d); var v=calcVekalet(d);
+    var kalan=v.vek-m.il-m.ya; var pay=kalan/2;
+    var pct=v.vek>0?Math.max(0,Math.round(kalan/v.vek*100)):0;
+    g('dv-vek').textContent=tl(v.vek);
+    g('dv-ilm').textContent='- '+tl(m.il);
+    g('dv-yam').textContent='- '+tl(m.ya);
+    g('dv-kal').textContent=tl(kalan);
+    g('dv-pay').textContent=tl(pay)+' / kisi';
+    g('dpfill').style.width=pct+'%';
+    g('dv-pct').textContent='%'+pct+' kalan';
+    g('s-il').textContent=tl(pay);
+    g('s-ya').textContent=tl(pay);
+    g('s-il-d').textContent='esit pay | masraf: '+tl(m.il)+' | toplam: '+tl(pay+m.il);
+    g('s-ya-d').textContent='esit pay | masraf: '+tl(m.ya)+' | toplam: '+tl(pay+m.ya);
+    g('fbox').textContent=v.vek>0?(tl(v.vek)+' - '+tl(m.il)+' (Ilyas) - '+tl(m.ya)+' (Yakup) = '+tl(kalan)+' / 2 = '+tl(pay)+'/kisi | Ilyas: '+tl(pay+m.il)+' Yakup: '+tl(pay+m.ya)):'Vekalet Ucreti sekmesinden mahkeme kararini girin...';
+  }
+
+  // NAV
+  window.showView=function(v){
+    g('view-dash').style.display=v==='dash'?'block':'none';
+    g('view-table').style.display=v==='table'?'block':'none';
+    g('nav-dash').classList.toggle('active',v==='dash');
+    g('nav-table').classList.toggle('active',v==='table');
+    g('pg-title').textContent=v==='dash'?'Genel Bakis':'Tüm Dosyalar';
+    if(v==='table')renderTable();
+  };
+  window.setFilter=function(f){stageFilter=f;renderPipeline();};
+
+  window.exportCSV=function(){
+    var rows=[['ID','Muvekkil','Sigorta','Tahkim No','Dosya Turu','Durum','Ihtar Bitis','Plaka','Masraflar']];
+    dosyalar.forEach(function(d){rows.push([d.id,d.muvekkil,d.sigorta,d.tahkimNo,d.dtype,stageTR(d.stage),d.ihtarBitis,d.muvPlaka,d.masraflar]);});
+    var csv='\uFEFF'+rows.map(function(r){return r.map(function(v){return '"'+(String(v||'')).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+    var a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='tahkim.csv';a.click();
+  };
+
+  function renderAll(){renderMetrics();renderPipeline();if(g('view-table')&&g('view-table').style.display!=='none')renderTable();}
+
+  // INIT
+  g('view-dash').style.display='block';
+  renderAll();
+})();
+
+</script>
+</body>
+</html>
