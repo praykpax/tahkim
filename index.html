@@ -8,7 +8,6 @@
 <title>Tahkim Takip — İlyas Yılanlı Hukuk Bürosu</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -1035,7 +1034,7 @@ var RAW = JSON.parse(document.getElementById('D').textContent);
     currentId=null;
     saveToStorage(); renderAll();
     toast('✓ Dosya silindi','err',2000);
-    deleteFromSupabase(deletedId);
+    syncToDrive();                            // silme sonrası Drive'ı güncelle (tüm liste yazılır)
   };
 
   window.openNew=function(){
@@ -1233,11 +1232,26 @@ var RAW = JSON.parse(document.getElementById('D').textContent);
     wrap.appendChild(t);
     setTimeout(function(){t.classList.add('out');setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},220);},dur||2800);
   }
-  // SUPABASE CONFIG
-  var SUPA_URL = 'https://syzidhcscmfmulkclgnd.supabase.co';
-  var SUPA_KEY = 'sb_publishable_8va68OAvjQlydhcW9uxu6Q_YOtXS0KX';
-  var supaClient = null;
-  try { supaClient = supabase.createClient(SUPA_URL, SUPA_KEY); } catch(e) { console.warn('Supabase başlatılamadı:', e); }
+  // ── VERİ KATMANI: GOOGLE DRIVE (Apps Script) ──────────────────────────────
+  // Tek veri kaynağı Drive'daki tahkim_yedek_SON.json'dur (Supabase kaldırıldı).
+  // Boş bırakılırsa uygulama yalnızca bu cihazdaki localStorage ile çalışır.
+  var DRIVE_URL = 'https://script.google.com/macros/s/AKfycbyk4Ipn7PFyxxymG8QKUuR7zXxkfEoW27QxzxkFKGvZEgrJLRVm2wzoICIvxFxEePyUJA/exec';
+  var _driveTimer = null;
+  // Tüm dosya listesini Drive'a yazar (debounce'lu, fire-and-forget).
+  function syncToDrive() {
+    if (!DRIVE_URL) return;                     // URL yoksa yalnızca localStorage
+    clearTimeout(_driveTimer);                  // art arda kayıtlarda tek istek
+    _driveTimer = setTimeout(function () {
+      try {
+        fetch(DRIVE_URL, {
+          method: 'POST',
+          mode: 'no-cors',                       // Apps Script CORS preflight'ını engellemek için
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ tip: 'tahkim_yedek', zaman: new Date().toISOString(), dosyalar: dosyalar })
+        }).catch(function (e) { console.warn('Drive yazma hatası:', e); });
+      } catch (e) { console.warn('Drive yazma hatası:', e); }
+    }, 1200);
+  }
 
   function setSyncStatus(status, msg) {
     var dot = g('syncDot'); var txt = g('syncTxt');
@@ -1246,92 +1260,15 @@ var RAW = JSON.parse(document.getElementById('D').textContent);
     txt.textContent = msg;
   }
 
-  function dosyaToRow(d) {
-    return {
-      id: d.id,
-      muvekkil: d.muvekkil || '',
-      sigorta: d.sigorta || '',
-      tahkim_no: d.tahkimNo || '',
-      dosya_no: d.dosyaNo || '',
-      police_no: d.policeNo || '',
-      kaza_tarihi: d.kazaTarihi || null,
-      ihtar_tarihi: d.ihtarTarihi || null,
-      ihtar_bitis: d.ihtarBitis || null,
-      muv_plaka: d.muvPlaka || '',
-      karsi_plaka: d.karsiPlaka || '',
-      masraflar: d.masraflar || '',
-      karar_bilgi: d.kararBilgi || '',
-      dtype: d.dtype || 'Hasar',
-      stage: d.stage || 'Basvuru',
-      durum: d.durum || {},
-      masraf_kalemleri: d.masrafKalemleri || [],
-      vekalet: d.vekalet || [],
-      odemeler: d.odemeler || [],
-      itiraz: d.itiraz || false,
-      itiraz_no: d.itirazNo || '',
-      itiraz_bilgi: d.itirazBilgi || '',
-      ilyas: d.ilyas || 0,
-      yakup: d.yakup || 0,
-      notlar: d.notlar || '',
-      updated_at: new Date().toISOString()
-    };
-  }
-
-  function rowToDosya(r) {
-    return {
-      id: r.id,
-      muvekkil: r.muvekkil || '',
-      sigorta: r.sigorta || '',
-      tahkimNo: r.tahkim_no || '',
-      dosyaNo: r.dosya_no || '',
-      policeNo: r.police_no || '',
-      kazaTarihi: r.kaza_tarihi || '',
-      ihtarTarihi: r.ihtar_tarihi || '',
-      ihtarBitis: r.ihtar_bitis || '',
-      muvPlaka: r.muv_plaka || '',
-      karsiPlaka: r.karsi_plaka || '',
-      masraflar: r.masraflar || '',
-      kararBilgi: r.karar_bilgi || '',
-      dtype: r.dtype || 'Hasar',
-      stage: r.stage || 'Basvuru',
-      durum: r.durum || {basvuru:false,hakem:false,bilirkisi:false,karar:false},
-      masrafKalemleri: r.masraf_kalemleri || [],
-      vekalet: r.vekalet || [],
-      odemeler: r.odemeler || [],
-      itiraz: r.itiraz || false,
-      itirazNo: r.itiraz_no || '',
-      itirazBilgi: r.itiraz_bilgi || '',
-      ilyas: r.ilyas || 0,
-      yakup: r.yakup || 0,
-      notlar: r.notlar || ''
-    };
-  }
-
-  async function saveToSupabase(d) {
-    if (!supaClient) return false;
-    try {
-      var row = dosyaToRow(d);
-      var res = await supaClient.from('tahkim_dosyalar').upsert(row, {onConflict:'id'});
-      if (res.error) { console.error('Supabase kayıt hatası:', res.error); return false; }
-      return true;
-    } catch(e) { console.error('Supabase hata:', e); return false; }
-  }
-
-  async function deleteFromSupabase(id) {
-    if (!supaClient) return;
-    try { await supaClient.from('tahkim_dosyalar').delete().eq('id', id); } catch(e) {}
-  }
-
   function saveToStorage() {
     try { localStorage.setItem('tahkim_dosyalar', JSON.stringify(dosyalar)); } catch(e) {}
   }
 
-  async function saveToStorageAndCloud(d) {
+  function saveToStorageAndCloud(d) {
     setSyncStatus('wait', 'Kaydediliyor...');
-    saveToStorage();
-    var ok = await saveToSupabase(d);
-    if (ok) { setSyncStatus('ok', 'Senkron ✓'); }
-    else { setSyncStatus('err', 'Bulut hatası'); }
+    saveToStorage();                          // 1. katman: bu cihaz (anında)
+    syncToDrive();                            // 2. katman: Google Drive (tek veri kaynağı)
+    setSyncStatus(DRIVE_URL ? 'ok' : 'err', DRIVE_URL ? 'Drive ✓' : 'Sadece bu cihaz');
   }
   function renderAll(){
     renderMetrics();renderPipeline();if(g('view-table')&&g('view-table').style.display!=='none')renderTable();
@@ -1365,49 +1302,45 @@ var RAW = JSON.parse(document.getElementById('D').textContent);
     }
   });
 
-  // INIT — Supabase'den yükle, yoksa localStorage'dan
+  // INIT — Drive'dan yükle (tek veri kaynağı), erişilemezse localStorage'a düş
   async function initData() {
     setSyncStatus('wait', 'Yükleniyor...');
-    if (supaClient) {
+    if (DRIVE_URL) {
       try {
-        var res = await supaClient.from('tahkim_dosyalar').select('*').order('id');
-        if (!res.error && res.data && res.data.length > 0) {
-          dosyalar = res.data.map(rowToDosya);
-          saveToStorage();
-          setSyncStatus('ok', 'Senkron ✓');
+        var res = await fetch(DRIVE_URL + (DRIVE_URL.indexOf('?') > -1 ? '&' : '?') + 'oku=1&t=' + Date.now());
+        var veri = await res.json();
+        if (veri && Array.isArray(veri.dosyalar) && veri.dosyalar.length > 0) {
+          dosyalar = veri.dosyalar;
+          saveToStorage();                     // yerel önbelleği tazele
+          setSyncStatus('ok', 'Drive ✓');
           renderAll();
           return;
         }
-        // Supabase boşsa localStorage'dan yükle ve Supabase'e aktar
+        // Drive boş — bu cihazda veri varsa Drive'a aktar
         var saved = localStorage.getItem('tahkim_dosyalar');
         if (saved) {
-          try {
-            var parsed = JSON.parse(saved);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              dosyalar = parsed;
-              setSyncStatus('wait', 'Buluta aktarılıyor...');
-              for (var i = 0; i < dosyalar.length; i++) {
-                await saveToSupabase(dosyalar[i]);
-              }
-              setSyncStatus('ok', 'Aktarıldı ✓');
-              renderAll();
-              return;
-            }
-          } catch(e) {}
+          var parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            dosyalar = parsed;
+            syncToDrive();
+            setSyncStatus('ok', 'Drive’a aktarıldı ✓');
+            renderAll();
+            return;
+          }
         }
         setSyncStatus('ok', 'Hazır');
         renderAll();
-      } catch(e) {
-        console.warn('Supabase yükleme hatası:', e);
-        setSyncStatus('err', 'Bağlantı yok');
-        var saved2 = localStorage.getItem('tahkim_dosyalar');
-        if (saved2) { try { var p2=JSON.parse(saved2); if(Array.isArray(p2)&&p2.length>0)dosyalar=p2; } catch(e2){} }
+      } catch (e) {
+        console.warn('Drive okuma hatası:', e);
+        setSyncStatus('err', 'Drive’a ulaşılamadı — yerel veri');
+        var s2 = localStorage.getItem('tahkim_dosyalar');
+        if (s2) { try { var p2 = JSON.parse(s2); if (Array.isArray(p2) && p2.length > 0) dosyalar = p2; } catch (e2) {} }
         renderAll();
       }
     } else {
-      var saved3 = localStorage.getItem('tahkim_dosyalar');
-      if (saved3) { try { var p3=JSON.parse(saved3); if(Array.isArray(p3)&&p3.length>0)dosyalar=p3; } catch(e3){} }
-      setSyncStatus('err', 'Offline mod');
+      var s3 = localStorage.getItem('tahkim_dosyalar');
+      if (s3) { try { var p3 = JSON.parse(s3); if (Array.isArray(p3) && p3.length > 0) dosyalar = p3; } catch (e3) {} }
+      setSyncStatus('err', 'Sadece bu cihaz (Drive URL yok)');
       renderAll();
     }
   }
