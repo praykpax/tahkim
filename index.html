@@ -739,13 +739,17 @@ var RAW = JSON.parse(document.getElementById('D').textContent);
   // METRICS
   function renderMetrics() {
     var total=dosyalar.length,karar=0,hasar=0,deger=0,hd=0,totV=0,totM=0,ilM=0,yaM=0,vadeli=0;
-    var bil=0,hak=0,bas=0;
+    var bil=0,hak=0,bas=0,gecmis=0;
     dosyalar.forEach(function(d){
       if(d.stage==='Karar')karar++;
       if(d.dtype==='Hasar')hasar++;else if(d.dtype==='Değer Kaybı')deger++;else hd++;
       var v=calcVekalet(d);totV+=v.tot;
       var m=calcMasraf(d);totM+=m.tot;ilM+=m.il;yaM+=m.ya;
-      var dy=daysUntil(d.ihtarBitis);if(dy!==null&&dy>=0&&dy<=30)vadeli++;
+      // İhtar bitiş uyarısı yalnızca dosya henüz Başvuru aşamasındaysa anlamlıdır (hakeme havale edilmemiş)
+      if(d.stage==='Basvuru'){
+        var dy=daysUntil(d.ihtarBitis);
+        if(dy!==null&&dy<=30){vadeli++;if(dy<0)gecmis++;}
+      }
       if(d.stage==='Bilirkisi')bil++;
       if(d.stage==='Hakem')hak++;
       if(d.stage==='Basvuru')bas++;
@@ -760,9 +764,9 @@ var RAW = JSON.parse(document.getElementById('D').textContent);
       mc.appendChild(div);
     }
     addMC('var(--bl)','Toplam Dosya',total,hasar+'H / '+deger+'D / '+hd+'H+D');
-    addMC('var(--te)','Toplam Vekalet',totV>0?tl(totV):'-','buroya gelen toplam');
+    addMC('var(--te)','Toplam Karar Tutarı',totV>0?tl(totV):'-','vekalet + harç toplamı');
     addMC('#639922','Toplam Masraf',totM>0?tl(totM):'-','Ilyas: '+tl(ilM)+' Yakup: '+tl(yaM));
-    addMC('var(--pu)','Vadesi Yakin',vadeli,'30 gun icinde ihtar bitis');
+    addMC(gecmis>0?'var(--re)':'var(--pu)','İhtar Süresi',vadeli,gecmis>0?(gecmis+' süresi geçti — tahkime havale gerekiyor'):'30 gün içinde ihtar bitiş');
     addMC('var(--am)','Aktif Dosya',total-karar,bil+' bilirkisi '+hak+' hakem '+bas+' basvuru');
 
     var ss=g('sb-stats'); ss.innerHTML='';
@@ -817,11 +821,14 @@ var RAW = JSON.parse(document.getElementById('D').textContent);
             dc.onkeydown=(function(id){return function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();openModal(id);}};})(d.id);
             var badge2=ce('span','dt-b '+dtBadge(d.dtype),dtLabel(d.dtype));
             dc.appendChild(badge2);
-            var sig=ce('span','dc-sig',d.sigorta||'-');
+            var sigTxt=(d.tahkimNo?d.tahkimNo:(d.sigorta||'-'))+(d.tahkimNo&&d.sigorta?' · '+d.sigorta:'');
+            var sig=ce('span','dc-sig',sigTxt);
+            sig.title=sigTxt;
             dc.appendChild(sig);
+            // İhtar bitiş uyarısı: yalnızca Başvuru aşamasında anlamlı; süre geçmişse de göster (aksi halde tam da havale gerektiğinde uyarı sessizce kaybolur)
             var days=d.ihtarBitis?daysUntil(d.ihtarBitis):null;
-            if(days!==null&&days>=0&&days<=IHTAR_UYARI_GUN){
-              var al=ce('span','alrt',days+'g');
+            if(d.stage==='Basvuru'&&days!==null&&days<=IHTAR_UYARI_GUN){
+              var al=ce('span','alrt',days<0?(Math.abs(days)+'g geçti'):(days+'g'));
               dc.appendChild(al);
             }
             mgb.appendChild(dc);
@@ -870,7 +877,7 @@ var RAW = JSON.parse(document.getElementById('D').textContent);
       if(d.ihtarBitis){
         itd.textContent=fd(d.ihtarBitis);
         var days=daysUntil(d.ihtarBitis);
-        if(days!==null&&days>=0&&days<=IHTAR_UYARI_GUN){var al=ce('span','alrt',days+'g');itd.appendChild(al);}
+        if(d.stage==='Basvuru'&&days!==null&&days<=IHTAR_UYARI_GUN){var al=ce('span','alrt',days<0?(Math.abs(days)+'g geçti'):(days+'g'));itd.appendChild(al);}
       } else { itd.textContent='-'; }
       tr.appendChild(itd);
       
@@ -1344,7 +1351,17 @@ var RAW = JSON.parse(document.getElementById('D').textContent);
       renderAll();
     }
   }
-  (function(){ initData(); })();
+  function checkIhtarUyari(){
+    var gecmis=dosyalar.filter(function(d){
+      if(d.stage!=='Basvuru') return false;
+      var dy=daysUntil(d.ihtarBitis);
+      return dy!==null&&dy<0;
+    });
+    if(gecmis.length){
+      toast('⚠ '+gecmis.length+' dosyada ihtar süresi geçti — tahkime havale gerekiyor','err',5000);
+    }
+  }
+  (function(){ initData().then(checkIhtarUyari); })();
   // Topbar yılı dinamik
   (function(){var el=g('topbar-year');if(el)el.textContent=new Date().getFullYear();})();
   g('view-dash').style.display='block';
